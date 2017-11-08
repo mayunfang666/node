@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<style>
+		#lis>.one{
+			display: inline-block;
+			width: 100px;
+			height: 40px;
+			font-size: 20px;
+			color: #ccc;
+			margin-right: 50px;
+		}
+		#lis>.two{
+			display: inline-block;
+			width: 100px;
+			height: 40px;
+			font-size: 22px;
+			color: skyblue;
+		}
+		.delBtn{
+			width: 80px;
+			height: 40px;
+			display: inline-block;
+			border:none;
+			border:1px solid #ccc;
+			outline: none;
+			margin-right: 10px;
+		}
+		.updateBtn{
+			width: 80px;
+			height: 40px;
+			display: inline-block;
+			border:none;
+			border:1px solid #ccc;
+			outline: none;
+		}
+	</style>
+</head>
+<body>
+	<ul>
+		<%for(var i=0;i<data.length;i++){%>
+			<li id="lis"><span class='one'>姓名:<%=data[i].user%></span><span class='two'>年龄:<%=data[i].uPwd%></span>
+				<button class="delBtn" data-id=<%= data[i].id%>>删除</button>
+				<button class="updateBtn" data-user=<%= data[i].user%> data-pwd=<%=data[i].uPwd%> data-id=<%= data[i].id%>>修改</button>
+			</li>
+		<%}%>
+	</ul>
+	<input type="text" name='user' id="user">
+	<input type="text" name='pwd' id="pwd">
+	<input type="button" value='确认' id="btn">
+	<script src="jquery.js"></script>
+	<script>
+		/*$.ajax({
+			url:'/successed',
+			success:function(rs){
+				console.log(rs);
+				var str='';
+				for(var i=0;i<rs.length;i++){
+					str+="<li><span class='one'>"+rs[i].user+"</span><span class='two'>"+rs[i].uPwd+"</span></li>";
+				}
+				$(".uls").html(str);
+
+			}
+		})*/
+		var id=null;
+		$(".delBtn").on("click",function(){
+
+			$.ajax({
+				url:'/delted',
+				type:'post',
+				data:{id:$(this).data('id')},
+				success:function(rs){
+					if(rs.code==1){
+						alert(rs.msg);
+						location.reload();
+
+					}else{
+						alert(rs.msg);
+					}
+				}
+			})
+		})
+		$('.updateBtn').on('click',function(){
+			$("#user").val($(this).data('user'));
+			$("#pwd").val($(this).data('pwd'));
+			id=$(this).data('id');
+
+		})
+		$("#btn").on("click",function(){
+			$.ajax({
+				url:'/updated',
+				type:'post',
+				data:{
+					id:id,
+					user:$("#user").val(),
+					pwd:$("#pwd").val()
+				},
+				success:function(rs){
+					if(rs.code==1){
+						alert(rs.msg);
+						location.reload();
+					}
+				}
+			})
+		})
+	</script>
+</body>
+</html>

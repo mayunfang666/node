@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>聊天室</title>
+	<style>
+		*{
+			padding:0;
+			margin:0;
+			box-sizing:border-box;
+		}
+		#box{
+			width: 700px;
+			height: 500px;
+			margin:50px auto;
+			box-shadow:0px 0px 5px 0px skyblue;
+		}
+		#content{
+			width: 100%;
+			height: 350px;
+			border-bottom:1px solid pink;
+			overflow: auto;
+		}
+		#txt{
+			width: 300px;
+			height: 30px;
+			display: inline-block;
+			margin:50px 5px 0px 20px;
+			outline: none;
+		}
+		#btn{
+			display: inline-block;
+			width: 60px;
+			height: 30px;
+			border:none;
+			border:1px solid skyblue;
+			background:rgb(177,250,248);
+			color: #666;
+			outline: none;
+		}
+		span{
+			line-height: 30px;
+		}
+		.hide{
+			display: none;
+		}.show{
+			display: block;
+		}
+		#loginArea{
+			width: 400px;
+			height: 200px;
+			background: rgb(244,250,250);
+			margin:100px auto;
+		}
+		#user{
+			display: inline-block;
+			width: 300px;
+			height: 40px;
+			margin:20px 10px 10px 10px;
+			border:none;
+			border:1px solid #ccc;
+			outline: none;
+			padding-left: 10px;
+		}
+		#pwd{
+			display: inline-block;
+			width: 300px;
+			height: 40px;
+			margin:10px 10px 10px 10px;
+			border:none;
+			border:1px solid #ccc;
+			outline: none;
+			padding-left: 10px;
+		}
+		#loginBtn{
+			display: inline-block;
+			width: 300px;
+			height: 40px;
+			border:none;
+			background: skyblue;
+			outline: none;
+			color: #fff;
+			border-radius: 2px;
+			margin-left: 10px;
+		}
+		#tip{
+			font-size: 12px;
+			color: red;
+		}
+		#sendFile{
+			display: inline-block;
+			width: 70px;
+			height: 40px;
+			border:none;
+			outline: none;
+		}
+	</style>
+</head>
+<body>
+	<div id="loginArea" class="show">
+		<input type="text" id="user">账号<br/>
+		<input type="password" id="pwd">密码<br/>
+		<input type="button" value="登录" id="loginBtn">
+		<span id="tip"></span>
+
+	</div>
+	<div id="box" class="hide">
+		<div id="content"></div>
+		<input type="text" id="txt">
+		<input type="color" id="col">
+		<input type="file" id="sendFile">
+		<input type="button" value="发送" id="btn">
+	</div>
+	<script src='/socket.io/socket.io.js'></script>
+	<script>
+		var s=io.connect('http://localhost:8008');
+	    var loginArea=document.getElementById('loginArea'),
+			user=document.getElementById('user'),
+			sendFile=document.getElementById('sendFile'),
+			pwd=document.getElementById('pwd'),
+			tip=document.getElementById('tip'),
+			loginBtn=document.getElementById('loginBtn'),
+			box=document.getElementById('box')
+			btn=document.getElementById('btn'),
+			col=document.getElementById('col'),
+			txt=document.getElementById('txt'),
+			content=document.getElementById('content');
+		var color="black";
+		col.onchange=function(){
+			color=this.value;
+		}
+		s.on('connect',()=>{
+
+			sendFile.onchange=function(){
+				if(this.files.length==1){
+					var fr=new FileReader();
+					fr.readAsDataURL(this.files[0]);
+					fr.onload=function(){
+						s.emit('sendImg',this.result);
+					}
+				}
+			}
+			loginBtn.onclick=function(){
+				if(user.value!=''||pwd.value!=''){
+					s.emit('login',user.value,pwd.value);
+				}
+			}
+			btn.onclick=function(){
+
+				s.emit('toServer','<span style=color:'+color+'>'+txt.value+'</span>');
+				txt.value='';
+			}
+			s.on('toCliect',msg=>{
+				content.innerHTML+=msg+'<br/>';
+			})
+			s.on('loginOk',msg=>{
+				alert(msg);
+				loginArea.className='hide';
+				box.className='show';
+			})
+			s.on('loginErr',msg=>{
+				tip.innerHTML=msg;
+			})
+			s.on('pic',(data,user)=>{
+				content.innerHTML+='<br/>'+user+"说:";
+				var img=document.createElement('img');
+				img.src=data;
+				content.appendChild(img);
+			})
+		})
+
+
+	</script>
+</body>
+</html>
